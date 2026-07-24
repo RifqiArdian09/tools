@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favicon Generator Pro</title>
+    <!-- JSZip for bundling downloads -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --container-bg: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            --accent-hover: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,0.2) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,0.2) 0, transparent 50%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: var(--container-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 16px;
+            padding: 3rem 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            background: rgba(255, 255, 255, 0.02);
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 250px;
+        }
+
+        .upload-area:hover, .upload-area.dragover {
+            border-color: #a855f7;
+            background: rgba(168, 85, 247, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-subtext {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        #preview {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 12px;
+            display: none;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            margin-top: 1rem;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .btn {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6);
+            background: var(--accent-hover);
+        }
+
+        .btn:disabled {
+            background: #334155;
+            color: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .results-section {
+            margin-top: 3rem;
+            display: none;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .result-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+
+        .result-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .result-item img {
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            background-color: white; /* to show transparency properly */
+        }
+
+        .result-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .download-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            text-decoration: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .download-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Favicon Generator Pro</h1>
+        <p class="subtitle">Buat favicon sempurna untuk website Anda. Mendukung berbagai ukuran standar.</p>
+
+        <div class="upload-area" id="uploadArea">
+            <input type="file" id="imageInput" accept="image/png, image/jpeg, image/svg+xml, image/webp" hidden>
+            
+            <div id="uploadContent">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">Klik atau Drag & Drop Gambar ke Sini</div>
+                <div class="upload-subtext">Mendukung PNG, JPG, SVG, WebP</div>
+            </div>
+            
+            <img id="preview" alt="Preview Gambar">
+        </div>
+
+        <button id="generateBtn" class="btn" disabled>
+            ✨ Generate Favicons
+        </button>
+
+        <div id="resultsSection" class="results-section">
+            <h2 style="margin-bottom: 1.5rem; font-size: 1.5rem;">Hasil Generate</h2>
+            <div id="resultsGrid" class="results-grid"></div>
+            <button id="downloadAllBtn" class="btn" style="width: 100%;">
+                📦 Download Semua (ZIP)
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const sizes = [16, 32, 64, 128, 180, 192, 512];
+        let originalImage = null;
+        let generatedFiles = []; // Store generated data URLs
+
+        const uploadArea = document.getElementById('uploadArea');
+        const imageInput = document.getElementById('imageInput');
+        const preview = document.getElementById('preview');
+        const uploadContent = document.getElementById('uploadContent');
+        const generateBtn = document.getElementById('generateBtn');
+        const resultsSection = document.getElementById('resultsSection');
+        const resultsGrid = document.getElementById('resultsGrid');
+        const downloadAllBtn = document.getElementById('downloadAllBtn');
+
+        // Handle Click Upload
+        uploadArea.addEventListener('click', () => {
+            imageInput.click();
+        });
+
+        // Handle Drag & Drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        // Handle Input Change
+        imageInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Silakan upload file gambar.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    originalImage = img;
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    uploadContent.style.display = 'none';
+                    generateBtn.disabled = false;
+                    resultsSection.style.display = 'none';
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Generate Favicons
+        generateBtn.addEventListener('click', async () => {
+            if (!originalImage) return;
+
+            // UI feedback
+            generateBtn.innerHTML = '⏳ Generating...';
+            generateBtn.disabled = true;
+
+            resultsGrid.innerHTML = '';
+            generatedFiles = [];
+
+            // Small delay to allow UI to update before heavy canvas operations
+            setTimeout(() => {
+                sizes.forEach(size => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = size;
+                    canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Smooth image rendering
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    
+                    ctx.drawImage(originalImage, 0, 0, size, size);
+                    
+                    const dataUrl = canvas.toDataURL('image/png');
+                    const filename = `favicon-${size}x${size}.png`;
+                    
+                    generatedFiles.push({ filename, dataUrl });
+
+                    // Create UI Item
+                    const item = document.createElement('div');
+                    item.className = 'result-item';
+                    
+                    const img = document.createElement('img');
+                    img.src = dataUrl;
+                    // Cap visual size to 100px so big favicons don't break layout
+                    img.style.maxWidth = size > 100 ? '100px' : `${size}px`;
+                    img.style.maxHeight = size > 100 ? '100px' : `${size}px`;
+                    
+                    const label = document.createElement('div');
+                    label.className = 'result-label';
+                    label.textContent = `${size}x${size}`;
+                    
+                    const link = document.createElement('a');
+                    link.className = 'download-btn';
+                    link.href = dataUrl;
+                    link.download = filename;
+                    link.textContent = 'Download';
+
+                    item.appendChild(img);
+                    item.appendChild(label);
+                    item.appendChild(link);
+                    
+                    resultsGrid.appendChild(item);
+                });
+
+                resultsSection.style.display = 'block';
+                generateBtn.innerHTML = '✨ Generate Favicons';
+                generateBtn.disabled = false;
+                
+                // Scroll to results
+                resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        });
+
+        // Download All (ZIP)
+        downloadAllBtn.addEventListener('click', () => {
+            const zip = new JSZip();
+            
+            generatedFiles.forEach(file => {
+                // Extract base64 data without the prefix "data:image/png;base64,"
+                const base64Data = file.dataUrl.split(',')[1];
+                zip.file(file.filename, base64Data, {base64: true});
+            });
+
+            // For convenience, let's also create an ico file from the 32x32 size if possible
+            // Actually, browsers accept PNG as favicon, so we will just name the 32x32 as favicon.ico as a fallback
+            const size32 = generatedFiles.find(f => f.filename === 'favicon-32x32.png');
+            if (size32) {
+                zip.file('favicon.ico', size32.dataUrl.split(',')[1], {base64: true});
+            }
+
+            // Generate HTML snippet
+            let htmlSnippet = "<!-- Tambahkan baris berikut di dalam tag <head> HTML Anda -->\n";
+            sizes.forEach(size => {
+                htmlSnippet += `<link rel="icon" type="image/png" sizes="${size}x${size}" href="/favicon-${size}x${size}.png">\n`;
+            });
+            zip.file('instructions.html', htmlSnippet);
+
+            zip.generateAsync({type:"blob"}).then(function(content) {
+                // Create a temporary link to download the zip
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                link.download = 'favicons.zip';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+        });
+
+    </script>
+</body>
+</html>

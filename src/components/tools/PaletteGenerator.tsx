@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
-// @ts-expect-error - colorthief has no default export in some tsconfigs
-import ColorThief from 'colorthief';
+import * as ColorThiefLib from 'colorthief';
 import { Upload, Copy, CheckCircle2 } from 'lucide-react';
 
 
@@ -32,11 +31,20 @@ export default function PaletteGenerator() {
   const handleImageLoad = () => {
     if (imgRef.current) {
       try {
-        const colorThief = new ColorThief();
-        const colors = colorThief.getPalette(imgRef.current, 6);
+        let colors = [];
+        const lib = ColorThiefLib as any;
+        if (typeof lib.getPalette === 'function') {
+           colors = lib.getPalette(imgRef.current, 6);
+        } else if (typeof lib.default === 'function') {
+           const colorThief = new lib.default();
+           colors = colorThief.getPalette(imgRef.current, 6);
+        } else {
+           const colorThief = new lib();
+           colors = colorThief.getPalette(imgRef.current, 6);
+        }
         setPalette(colors);
-      } catch (err) {
-        console.error("Error generating palette", err);
+      } catch (error) {
+        console.error("Error generating palette", error);
       }
     }
   };

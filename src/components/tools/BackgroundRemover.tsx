@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import imglyRemoveBackground from '@imgly/background-removal';
+import * as imgly from '@imgly/background-removal';
 import { Upload, Download, Loader2, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -35,7 +35,7 @@ export default function BackgroundRemover() {
     setProgress('Loading AI Model...');
     
     try {
-      const blob = await (imglyRemoveBackground as any)(imageSrc, {
+      const blob = await (imgly.removeBackground as any)(imageSrc, {
         progress: (_key: string, current: number, total: number) => {
           if (total) {
             setProgress(`Processing: ${Math.round((current / total) * 100)}%`);

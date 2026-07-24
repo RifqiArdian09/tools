@@ -35,8 +35,8 @@ export default function BackgroundRemover() {
     setProgress('Loading AI Model...');
     
     try {
-      const blob = await imglyRemoveBackground(imageSrc, {
-        progress: (key: string, current: number, total: number) => {
+      const blob = await (imglyRemoveBackground as any)(imageSrc, {
+        progress: (_key: string, current: number, total: number) => {
           if (total) {
             setProgress(`Processing: ${Math.round((current / total) * 100)}%`);
           }

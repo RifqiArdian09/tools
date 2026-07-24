@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
+// @ts-expect-error - colorthief has no default export in some tsconfigs
 import ColorThief from 'colorthief';
 import { Upload, Copy, CheckCircle2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+
 
 export default function PaletteGenerator() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);

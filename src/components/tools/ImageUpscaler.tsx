@@ -2,14 +2,12 @@ import React, { useState, useRef } from 'react';
 import Upscaler from 'upscaler';
 import { Upload, Download, Loader2, ArrowUpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 
 export default function ImageUpscaler() {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState<string>('');
-  const [scale, setScale] = useState<number>(2);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (file: File) => {

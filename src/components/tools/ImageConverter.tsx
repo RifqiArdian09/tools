@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload, Download, ArrowRight } from 'lucide-react';
+import { Upload, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 
